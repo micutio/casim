@@ -1,0 +1,22 @@
+[package]
+name = "casim"
+version = "0.0.1"
+authors = ["Michael Wagner <wagner.mchl@googlemail.com>"]
+license = "MIT License"
+edition = "2018"
+description = "Cellular Automaton Simulator - a library for creating cellular automata and complex automata in Rust."
+repository = "https://github.com/micutio/grid_machine"
+readme = "README.md"
+# Up to five keywords.
+keywords = ["alife", "cellular automaton", "agent-based", "simulation"]
+categories = ["simulation"]
+
+[dependencies]
+log = "0.4.14"
+pretty_env_logger = "0.4.0"
+
+[lib]
+name = "grid_machine"
+path = "src/lib.rs"
+test = true
+doctest = true

@@ -23,8 +23,3 @@ pub mod abm;
 pub mod ca;
 
 mod tests;
-
-pub struct Simulation<C> {
-    state: Vec<C>,
-    buffer: Vec<C>,
-}

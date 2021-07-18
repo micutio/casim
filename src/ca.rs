@@ -64,3 +64,14 @@ where
 fn coord_to_idx(width: i32, x: i32, y: i32) -> usize {
     (y * width + x) as usize
 }
+
+pub fn von_neuman(x: i32, y: i32) -> Vec<(i32, i32)> {
+    vec![
+        (x - 1, y),
+        (x, y - 1),
+        (x - 1, y - 1),
+        (x + 1, y),
+        (x, y + 1),
+        (x + 1, y + 1),
+    ]
+}

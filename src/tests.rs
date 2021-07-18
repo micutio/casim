@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::ca::Simulation;
+    use crate::ca::{von_neuman, Simulation};
 
     #[test]
     fn it_works() {
@@ -26,16 +26,6 @@ mod tests {
             if falses > trues {
                 *cell = false;
             }
-        };
-        let von_neuman = |x: i32, y: i32| {
-            vec![
-                (x - 1, y),
-                (x, y - 1),
-                (x - 1, y - 1),
-                (x + 1, y),
-                (x, y + 1),
-                (x + 1, y + 1),
-            ]
         };
 
         let gol = Simulation::new(10, 10, trans_fn, von_neuman);

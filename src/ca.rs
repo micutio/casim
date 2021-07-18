@@ -22,7 +22,7 @@ pub struct Simulation<C, T, N> {
 impl<C, T, N> Simulation<C, T, N>
 where
     C: Clone + Default,
-    T: Fn(&mut C, &[&C]),
+    T: FnMut(&mut C, &[&C]),
     N: Fn(i32, i32) -> Vec<(i32, i32)>,
 {
     pub fn new(width: i32, height: i32, transition: T, neighborhood: N) -> Self {
@@ -54,6 +54,10 @@ where
         }
 
         mem::swap(&mut self.state, &mut self.buffer)
+    }
+
+    pub fn cells(&self) -> &[C] {
+        &self.state
     }
 }
 

@@ -17,9 +17,23 @@
 
 #[macro_use]
 extern crate log;
+extern crate num;
 extern crate pretty_env_logger;
+
+use self::num::Num;
 
 pub mod abm;
 pub mod ca;
 
 mod tests;
+
+// TODO: Add RNG
+// TODO: Add cell initialisation (method)
+//       - maybe use constructor for use with a `LocatedCell` trait
+// TODO: Add simple terminal-based visualisation
+
+/// Modulus function.
+/// In Rust the `%` operator is the remainder, not modulus.
+pub fn modulus<T: Num + PartialOrd + Copy>(a: T, b: T) -> T {
+    ((a % b) + b) % b
+}

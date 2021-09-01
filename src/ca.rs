@@ -2,8 +2,6 @@
 
 use std::mem;
 
-use crate::modulus;
-
 /// C = Cell
 ///     - data type of the cell
 /// T = Transition
@@ -32,7 +30,27 @@ where
         let capacity: usize = (width * height) as usize;
         let state = vec![C::default(); capacity];
         let buffer = vec![C::default(); capacity];
-        debug!("creating simuation");
+        debug!("creating simulation");
+        Simulation {
+            width,
+            height,
+            state,
+            buffer,
+            transition,
+            neighborhood,
+        }
+    }
+
+    // TODO: Return error if `cells` doesn't match the width and height parameter.
+    pub fn from_cells(
+        width: i32,
+        height: i32,
+        transition: T,
+        neighborhood: N,
+        cells: Vec<C>,
+    ) -> Self {
+        let state = cells;
+        let buffer = vec![C::default(); state.len()];
         Simulation {
             width,
             height,
@@ -79,9 +97,9 @@ fn coord_to_idx(width: i32, x: i32, y: i32) -> usize {
     (y * width + x) as usize
 }
 
-fn _idx_to_coordinate(idx: usize, width: usize) -> (i32, i32) {
-    let x = modulus(idx, width);
-    let y = idx % width;
+fn _idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
+    let x = idx % width;
+    let y = idx / width;
     (x as i32, y as i32)
 }
 
@@ -94,4 +112,55 @@ pub fn von_neuman(x: i32, y: i32) -> Vec<(i32, i32)> {
         (x, y + 1),
         (x + 1, y + 1),
     ]
+}
+
+// test cases: matrix with width=4
+// - (2,1) => 6
+// - (3,3) => 15
+// - (1,5) => 21
+
+#[test]
+fn test_coord_to_idx() {
+    let coord = (3, 3);
+    let idx = coord_to_idx(4, coord.0, coord.1);
+    assert!(idx == 15);
+}
+
+#[test]
+fn test_idx_to_coord() {
+    let idx = 15;
+    let coord = _idx_to_coord(4, idx);
+    assert!(coord == (3, 3));
+}
+
+#[test]
+fn test_roundtrip_idx_coords() {
+    for idx in 0..9_999 {
+        for width in 1..10_000 {
+            let coord = _idx_to_coord(width, idx);
+            let new_idx = coord_to_idx(width as i32, coord.0, coord.1);
+            // println!(
+            //     "idx: {0}, new_idx: {1}, width: {2}, (coord=({3}, {4}))",
+            //     idx, new_idx, width, coord.0, coord.1
+            // );
+            assert!(idx == new_idx);
+        }
+    }
+}
+
+#[test]
+fn test_roundtrip_coords_idx() {
+    for width in 1..99 {
+        for y in 0..99 {
+            for x in 0..(width - 1) {
+                let idx = coord_to_idx(width, x, y);
+                let new_coord = _idx_to_coord(width as usize, idx);
+                println!(
+                    "(x, y)=({0}, {1}), idx={2}, new_coord=({3}, {4}), width={5}",
+                    x, y, idx, new_coord.0, new_coord.1, width
+                );
+                assert!(new_coord.0 == x && new_coord.1 == y);
+            }
+        }
+    }
 }

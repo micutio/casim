@@ -1,3 +1,6 @@
+//! For a reference on building benchmarks look at:
+//! https://bheisler.github.io/criterion.rs/book/getting_started.html
+
 #[cfg(test)]
 use casim::ca::{von_neuman, Simulation};
 

@@ -1,5 +1,5 @@
 use casim::ca::{von_neuman, Simulation};
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 
 pub fn gol_benchmark(c: &mut Criterion) {
     let trans_fn = |cell: &mut bool, neighs: &[&bool]| {

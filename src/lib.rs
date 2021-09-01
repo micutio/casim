@@ -17,7 +17,6 @@
 
 #[macro_use]
 extern crate log;
-extern crate num;
 extern crate pretty_env_logger;
 
 pub mod abm;

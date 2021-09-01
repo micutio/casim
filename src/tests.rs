@@ -15,7 +15,7 @@ mod tests {
                 }
             }
 
-            if trues > falses {
+            if trues >= falses {
                 *cell = true;
             }
             if falses > trues {
@@ -23,39 +23,15 @@ mod tests {
             }
         };
 
-        let cells = vec![
-            false, false, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false, false, true, true, false, false, false, false, false,
-            false, false, false, false, true, false, true, false, false, false, false, false,
-            false, false, false, false, false, true, false, false, false, false, false, false,
-            false, false, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false,
-        ];
+        let cells = vec![false, true, false, true, false, true, false, true, false];
 
-        assert!(cells.len() == 100);
+        assert!(cells.len() == 9);
 
-        let mut gol = Simulation::from_cells(10, 10, trans_fn, von_neuman, cells);
-
-        // for c in gol.cells() {
-        //     assert!(!c)
-        // }
+        let mut gol = Simulation::from_cells(3, 3, trans_fn, von_neuman, cells);
 
         gol.step();
 
-        let cells_post_ca = vec![
-            false, false, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false, false, true, true, false, false, false, false, false,
-            false, false, false, false, true, true, true, false, false, false, false, false, false,
-            false, false, false, false, true, false, false, false, false, false, false, false,
-            false, false, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false, false, false, false, false, false, false, false, false,
-            false, false, false,
-        ];
+        let cells_post_ca = vec![true, false, true, false, true, false, true, false, true];
 
         println!("TEST OUTPUT TEST");
 

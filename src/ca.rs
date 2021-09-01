@@ -24,7 +24,7 @@ impl<C, T, N> Simulation<C, T, N>
 where
     C: Clone + Default,
     T: FnMut(&mut C, &[&C]),
-    N: Fn(i32, i32) -> Vec<(i32, i32)>,
+    N: Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>,
 {
     pub fn new(width: i32, height: i32, transition: T, neighborhood: N) -> Self {
         let capacity: usize = (width * height) as usize;
@@ -63,18 +63,19 @@ where
 
     /// Perform one simulation step.
     pub fn step(&mut self) {
-        // Manipulate the internal state of a cell the `state` grid by iterating over the cells at
-        // the neighborhood coordinates in the `buffer` grid.
+        // Manipulate the internal state of a cell the `buffer` grid by iterating over the cells at
+        // the neighborhood coordinates in the `state` grid.
+        let w = self.width;
+        let buf_ref = &mut self.buffer;
+        let state_ref = &self.state;
         for x in 0..self.width {
             for y in 0..self.height {
-                let w = self.width;
-                let buf_ref = &self.buffer;
-                let state_ref = &mut self.state;
-                let neighbors: Vec<&C> = (self.neighborhood)(x, y)
+                let neighbors: Vec<&C> = (self.neighborhood)(x, y, self.width, self.height)
                     .iter()
-                    .map(|(i, j)| &buf_ref[coord_to_idx(w, *i, *j)])
+                    .inspect(|tuple| println!("inspecting tuple ({},{})", tuple.0, tuple.1))
+                    .map(|(i, j)| &state_ref[coord_to_idx(w, *i, *j)])
                     .collect();
-                (self.transition)(&mut state_ref[coord_to_idx(w, x, y)], &neighbors)
+                (self.transition)(&mut buf_ref[coord_to_idx(w, x, y)], &neighbors)
             }
         }
 
@@ -103,34 +104,13 @@ fn _idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
     (x as i32, y as i32)
 }
 
-pub fn von_neuman(x: i32, y: i32) -> Vec<(i32, i32)> {
-    vec![
-        (x - 1, y),
-        (x, y - 1),
-        (x - 1, y - 1),
-        (x + 1, y),
-        (x, y + 1),
-        (x + 1, y + 1),
-    ]
-}
-
-// test cases: matrix with width=4
-// - (2,1) => 6
-// - (3,3) => 15
-// - (1,5) => 21
-
-#[test]
-fn test_coord_to_idx() {
-    let coord = (3, 3);
-    let idx = coord_to_idx(4, coord.0, coord.1);
-    assert!(idx == 15);
-}
-
-#[test]
-fn test_idx_to_coord() {
-    let idx = 15;
-    let coord = _idx_to_coord(4, idx);
-    assert!(coord == (3, 3));
+static VON_NEUMAN_NEIGHBORHOOD: &'static [(i32, i32)] = &[(-1, 0), (0, -1), (1, 0), (0, 1)];
+pub fn von_neuman(x: i32, y: i32, width: i32, height: i32) -> Vec<(i32, i32)> {
+    VON_NEUMAN_NEIGHBORHOOD
+        .iter()
+        .map(|(a, b)| (x + a, y + b))
+        .filter(|(a, b)| *a >= 0 && *a < width && *b >= 0 && *b < height)
+        .collect::<Vec<(i32, i32)>>()
 }
 
 #[test]
@@ -139,10 +119,6 @@ fn test_roundtrip_idx_coords() {
         for width in 1..10_000 {
             let coord = _idx_to_coord(width, idx);
             let new_idx = coord_to_idx(width as i32, coord.0, coord.1);
-            // println!(
-            //     "idx: {0}, new_idx: {1}, width: {2}, (coord=({3}, {4}))",
-            //     idx, new_idx, width, coord.0, coord.1
-            // );
             assert!(idx == new_idx);
         }
     }
@@ -150,15 +126,11 @@ fn test_roundtrip_idx_coords() {
 
 #[test]
 fn test_roundtrip_coords_idx() {
-    for width in 1..99 {
-        for y in 0..99 {
+    for width in 1..49 {
+        for y in 0..49 {
             for x in 0..(width - 1) {
                 let idx = coord_to_idx(width, x, y);
                 let new_coord = _idx_to_coord(width as usize, idx);
-                println!(
-                    "(x, y)=({0}, {1}), idx={2}, new_coord=({3}, {4}), width={5}",
-                    x, y, idx, new_coord.0, new_coord.1, width
-                );
                 assert!(new_coord.0 == x && new_coord.1 == y);
             }
         }

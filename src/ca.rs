@@ -72,7 +72,6 @@ where
             for y in 0..self.height {
                 let neighbors: Vec<&C> = (self.neighborhood)(x, y, self.width, self.height)
                     .iter()
-                    .inspect(|tuple| println!("inspecting tuple ({},{})", tuple.0, tuple.1))
                     .map(|(i, j)| &state_ref[coord_to_idx(w, *i, *j)])
                     .collect();
                 (self.transition)(&mut buf_ref[coord_to_idx(w, x, y)], &neighbors)
@@ -105,6 +104,7 @@ fn _idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
 }
 
 static VON_NEUMAN_NEIGHBORHOOD: &'static [(i32, i32)] = &[(-1, 0), (0, -1), (1, 0), (0, 1)];
+
 pub fn von_neuman(x: i32, y: i32, width: i32, height: i32) -> Vec<(i32, i32)> {
     VON_NEUMAN_NEIGHBORHOOD
         .iter()

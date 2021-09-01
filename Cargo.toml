@@ -11,12 +11,22 @@ readme = "README.md"
 keywords = ["alife", "cellular automaton", "agent-based", "simulation"]
 categories = ["simulation"]
 
+[dev-dependencies]
+criterion = "0.3"
+
 [dependencies]
-log = "0.4.14"
-pretty_env_logger = "0.4.0"
+log = "0.4"
+pretty_env_logger = "0.4"
 
 [lib]
 name = "casim"
 path = "src/lib.rs"
 test = true
 doctest = true
+
+[[bench]]
+name = "gol"
+harness = false
+
+[[test]]
+name = "gol"

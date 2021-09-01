@@ -22,8 +22,6 @@ extern crate pretty_env_logger;
 pub mod abm;
 pub mod ca;
 
-mod tests;
-
 // TODO: Add RNG
 // TODO: Add cell initialisation (method)
 //       - maybe use constructor for use with a `LocatedCell` trait

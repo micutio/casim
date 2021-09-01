@@ -2,6 +2,7 @@
 mod tests {
     use crate::ca::{von_neuman, Simulation};
 
+    /// Create a simple cellular automaton and flip all cells
     #[test]
     fn game_of_life() {
         let trans_fn = |cell: &mut bool, neighs: &[&bool]| {

@@ -14,10 +14,9 @@ categories = ["simulation"]
 [dependencies]
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
-num = "0.4.0"
 
 [lib]
-name = "grid_machine"
+name = "casim"
 path = "src/lib.rs"
 test = true
 doctest = true

@@ -1,6 +1,6 @@
 //! Example of a simple game of life CA
 
-use grid_machine::ca::{von_neuman, Simulation};
+use casim::ca::{von_neuman, Simulation};
 
 fn main() {
     let trans_fn = |cell: &mut bool, neighs: &[&bool]| {

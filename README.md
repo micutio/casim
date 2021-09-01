@@ -1,4 +1,4 @@
-# grid_machine
+# casim
 
 Library for creating 2D cellular automata and complex automata in Rust
 

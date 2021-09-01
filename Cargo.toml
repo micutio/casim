@@ -5,7 +5,7 @@ authors = ["Michael Wagner <wagner.mchl@googlemail.com>"]
 license = "MIT License"
 edition = "2018"
 description = "Cellular Automaton Simulator - a library for creating cellular automata and complex automata in Rust."
-repository = "https://github.com/micutio/grid_machine"
+repository = "https://github.com/micutio/casim"
 readme = "README.md"
 # Up to five keywords.
 keywords = ["alife", "cellular automaton", "agent-based", "simulation"]

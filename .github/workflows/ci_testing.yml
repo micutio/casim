@@ -27,4 +27,5 @@ jobs:
   benchmarking:
     needs: testing
     runs-on: ubuntu-latest
+    steps:
     - run: cargo bench --verbose

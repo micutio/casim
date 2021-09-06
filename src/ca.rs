@@ -12,7 +12,7 @@ type Neighborhood = dyn Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>;
 /// N = Neighborhood
 ///     - for a given cell (position) get all neighboring cells (positions)
 ///     - Fn(i32, i32) -> [(i32, i32)]
-pub struct Simulation<'a, C> {
+pub struct Simulation<'a, C: Send> {
     width: i32,
     height: i32,
     state: Vec<C>,
@@ -22,7 +22,7 @@ pub struct Simulation<'a, C> {
 }
 
 /// T applies a function to Cell of buffer 1 and neighborhood and then puts a clone of the cell with the new state in buffer 2
-impl<'a, C> Simulation<'a, C>
+impl<'a, C: Send> Simulation<'a, C>
 where
     C: Clone + Default,
 {

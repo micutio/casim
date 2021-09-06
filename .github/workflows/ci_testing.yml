@@ -24,6 +24,8 @@ jobs:
     needs: building
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
     - name: Run Tests
       run: cargo test --verbose
 
@@ -31,5 +33,7 @@ jobs:
     needs: testing
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
     - name: Run Benchmarks
       run: cargo bench --verbose

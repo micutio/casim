@@ -2,6 +2,8 @@
 
 use std::mem;
 
+type Neighborhood = dyn Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>;
+
 /// C = Cell
 ///     - data type of the cell
 /// T = Transition
@@ -10,23 +12,26 @@ use std::mem;
 /// N = Neighborhood
 ///     - for a given cell (position) get all neighboring cells (positions)
 ///     - Fn(i32, i32) -> [(i32, i32)]
-pub struct Simulation<C, T, N> {
+pub struct Simulation<'a, C> {
     width: i32,
     height: i32,
     state: Vec<C>,
     buffer: Vec<C>,
-    transition: T,
-    neighborhood: N,
+    transition: &'a mut dyn FnMut(&mut C, &[&C]),
+    neighborhood: &'a dyn Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>,
 }
 
 /// T applies a function to Cell of buffer 1 and neighborhood and then puts a clone of the cell with the new state in buffer 2
-impl<C, T, N> Simulation<C, T, N>
+impl<'a, C> Simulation<'a, C>
 where
     C: Clone + Default,
-    T: FnMut(&mut C, &[&C]),
-    N: Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>,
 {
-    pub fn new(width: i32, height: i32, transition: T, neighborhood: N) -> Self {
+    pub fn new(
+        width: i32,
+        height: i32,
+        transition: &'a mut dyn FnMut(&mut C, &[&C]),
+        neighborhood: &'a Neighborhood,
+    ) -> Self {
         let capacity: usize = (width * height) as usize;
         let state = vec![C::default(); capacity];
         let buffer = vec![C::default(); capacity];
@@ -45,8 +50,8 @@ where
     pub fn from_cells(
         width: i32,
         height: i32,
-        transition: T,
-        neighborhood: N,
+        transition: &'a mut dyn FnMut(&mut C, &[&C]),
+        neighborhood: &'a Neighborhood,
         cells: Vec<C>,
     ) -> Self {
         let state = cells;

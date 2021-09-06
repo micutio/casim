@@ -15,25 +15,27 @@ jobs:
   building:
     runs-on: ubuntu-latest
     steps:
-    - name: checkout repository
+    - name: Checkout Repository
       uses: actions/checkout@v2
-    - name: build casim
+    - name: Build
       run: cargo build --verbose
-    - name: upload artifact
+    - name: Upload Artifact
       uses: actions/upload-artifact@v2
 
   testing:
     needs: building
     runs-on: ubuntu-latest
     steps:
-    - name: Download build
+    - name: Download Build
       uses: actions/download-artifact@v2
+    - name: Run Tests
       run: cargo test --verbose
 
   benchmarking:
     needs: testing
     runs-on: ubuntu-latest
     steps:
-    - name: Download build
+    - name: Download Build
       uses: actions/download-artifact@v2
+    - name: Run Benchmarks
       run: cargo bench --verbose

@@ -2,8 +2,6 @@
 
 use std::mem;
 
-type Neighborhood = dyn Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>;
-
 /// C = Cell
 ///     - data type of the cell
 /// T = Transition
@@ -12,25 +10,25 @@ type Neighborhood = dyn Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>;
 /// N = Neighborhood
 ///     - for a given cell (position) get all neighboring cells (positions)
 ///     - Fn(i32, i32) -> [(i32, i32)]
-pub struct Simulation<'a, C: Send> {
+pub struct Simulation<C: Send> {
     width: i32,
     height: i32,
     state: Vec<C>,
     buffer: Vec<C>,
-    transition: &'a mut dyn FnMut(&mut C, &[&C]),
-    neighborhood: &'a dyn Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>,
+    transition: Box<dyn FnMut(&mut C, &[&C])>,
+    neighborhood: Box<dyn Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>>,
 }
 
 /// T applies a function to Cell of buffer 1 and neighborhood and then puts a clone of the cell with the new state in buffer 2
-impl<'a, C: Send> Simulation<'a, C>
+impl<C: Send> Simulation<C>
 where
     C: Clone + Default,
 {
     pub fn new(
         width: i32,
         height: i32,
-        transition: &'a mut dyn FnMut(&mut C, &[&C]),
-        neighborhood: &'a Neighborhood,
+        trans_fn: impl FnMut(&mut C, &[&C]) + 'static,
+        neighbor_fn: impl Fn(i32, i32, i32, i32) -> Vec<(i32, i32)> + 'static,
     ) -> Self {
         let capacity: usize = (width * height) as usize;
         let state = vec![C::default(); capacity];
@@ -41,8 +39,8 @@ where
             height,
             state,
             buffer,
-            transition,
-            neighborhood,
+            transition: Box::new(trans_fn),
+            neighborhood: Box::new(neighbor_fn),
         }
     }
 
@@ -50,8 +48,8 @@ where
     pub fn from_cells(
         width: i32,
         height: i32,
-        transition: &'a mut dyn FnMut(&mut C, &[&C]),
-        neighborhood: &'a Neighborhood,
+        trans_fn: impl FnMut(&mut C, &[&C]) + 'static,
+        neighbor_fn: impl Fn(i32, i32, i32, i32) -> Vec<(i32, i32)> + 'static,
         cells: Vec<C>,
     ) -> Self {
         let state = cells;
@@ -61,8 +59,8 @@ where
             height,
             state,
             buffer,
-            transition,
-            neighborhood,
+            transition: Box::new(trans_fn),
+            neighborhood: Box::new(neighbor_fn),
         }
     }
 

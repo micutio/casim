@@ -2,7 +2,13 @@ use casim::ca::{von_neuman, Simulation};
 use criterion::{criterion_group, criterion_main, Criterion};
 
 pub fn gol_benchmark(c: &mut Criterion) {
-    let mut trans_fn = |cell: &mut bool, neighs: &[&bool]| {
+    let mut sim = create_ca();
+
+    c.bench_function("gol", |b| b.iter(|| sim.step_until(100)));
+}
+
+fn create_ca() -> Simulation<bool> {
+    let trans_fn = |cell: &mut bool, neighs: &[&bool]| {
         let mut trues: i32 = 0;
         let mut falses: i32 = 0;
         for n in neighs {
@@ -25,9 +31,7 @@ pub fn gol_benchmark(c: &mut Criterion) {
 
     assert!(cells.len() == 9);
 
-    let mut sim = Simulation::from_cells(3, 3, &mut trans_fn, &von_neuman, cells);
-
-    c.bench_function("gol", |b| b.iter(|| sim.step_until(100)));
+    Simulation::from_cells(3, 3, trans_fn, &von_neuman, cells)
 }
 
 criterion_group!(benches, gol_benchmark);

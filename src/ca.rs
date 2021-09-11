@@ -96,11 +96,11 @@ where
     }
 }
 
-fn coord_to_idx(width: i32, x: i32, y: i32) -> usize {
+pub fn coord_to_idx(width: i32, x: i32, y: i32) -> usize {
     (y * width + x) as usize
 }
 
-fn _idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
+pub fn idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
     let x = idx % width;
     let y = idx / width;
     (x as i32, y as i32)

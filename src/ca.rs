@@ -120,7 +120,7 @@ pub fn von_neuman(x: i32, y: i32, width: i32, height: i32) -> Vec<(i32, i32)> {
 fn test_roundtrip_idx_coords() {
     for idx in 0..9_999 {
         for width in 1..10_000 {
-            let coord = _idx_to_coord(width, idx);
+            let coord = idx_to_coord(width, idx);
             let new_idx = coord_to_idx(width as i32, coord.0, coord.1);
             assert!(idx == new_idx);
         }
@@ -133,7 +133,7 @@ fn test_roundtrip_coords_idx() {
         for y in 0..49 {
             for x in 0..(width - 1) {
                 let idx = coord_to_idx(width, x, y);
-                let new_coord = _idx_to_coord(width as usize, idx);
+                let new_coord = idx_to_coord(width as usize, idx);
                 assert!(new_coord.0 == x && new_coord.1 == y);
             }
         }

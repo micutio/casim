@@ -104,7 +104,58 @@ pub fn idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
     (x as i32, y as i32)
 }
 
-static VON_NEUMAN_NEIGHBORHOOD: &'static [(i32, i32)] = &[(-1, 0), (0, -1), (1, 0), (0, 1)];
+static VON_NEUMAN_NEIGHBORHOOD: &'static [(i32, i32); 4] = &[(-1, 0), (0, -1), (1, 0), (0, 1)];
+
+struct Neighborhood {
+    count: usize,
+    bounds: &'static [(i32, i32)],
+    ca_bounds: (i32, i32),
+    cell_coords: Option<(i32, i32)>,
+}
+
+impl Neighborhood {
+    fn new(bounds: &'static [(i32, i32)], ca_bounds: (i32, i32)) -> Self {
+        Neighborhood {
+            count: 0,
+            bounds,
+            ca_bounds,
+            cell_coords: None,
+        }
+    }
+
+    fn init_with_cell(&mut self, cell: (i32, i32)) {
+        self.cell_coords = Some(cell);
+    }
+
+    fn reset(&mut self) {
+        self.count = 0;
+    }
+}
+
+// Implement `Iterator` for `Fibonacci`.
+// The `Iterator` trait only requires a method to be defined for the `next` element.
+impl Iterator for Neighborhood {
+    // We can refer to this type using Self::Item
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.count == self.bounds.len() {
+            None
+        } else {
+            let cell = self.cell_coords.unwrap();
+            let neigh = (
+                self.bounds[self.count].0 + cell.0,
+                self.bounds[self.count].1 + cell.1,
+            );
+            let idx = coord_to_idx(self.ca_bounds.0, cell.0, cell.1);
+            if idx < 0 || idx > self.ca_bounds.0 {
+                None
+            } else {
+                Some(idx)
+            }
+        }
+    }
+}
 
 pub fn von_neuman(x: i32, y: i32, width: i32, height: i32) -> Vec<(i32, i32)> {
     VON_NEUMAN_NEIGHBORHOOD

@@ -1,28 +1,17 @@
 //! Example of a simple game of life CA
 
-use casim::ca::{von_neuman, Simulation};
+use casim::ca::{Neighborhood, Simulation, VON_NEUMAN_NEIGHBORHOOD};
 
 fn main() {
-    let trans_fn = |cell: &mut bool, neighs: &[&bool]| {
-        let mut trues: i32 = 0;
-        let mut falses: i32 = 0;
-        for n in neighs {
-            if **n {
-                trues += 1;
-            } else {
-                falses += 1;
-            }
-        }
+    let trans_fn = |cell: &mut bool, neigh_it: Neighborhood<bool>| {
+        let true_count = neigh_it.into_iter().filter(|c| **c == true).count();
 
-        if trues > falses {
+        if true_count > 2 {
             *cell = true;
-        }
-        if falses > trues {
-            *cell = false;
         }
     };
 
-    let mut gol = Simulation::new(10, 10, trans_fn, &von_neuman);
+    let mut gol = Simulation::new(10, 10, trans_fn, VON_NEUMAN_NEIGHBORHOOD);
 
     gol.step();
 }

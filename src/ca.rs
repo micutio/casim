@@ -13,8 +13,8 @@ use std::mem;
 pub struct Simulation<C: Send> {
     width: i32,
     height: i32,
-    transition: Box<dyn FnMut(&mut C, &[&C])>,
-    neighborhood: Box<dyn Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>>,
+    transition: Box<dyn FnMut(&mut C, Neighborhood<C>)>,
+    neighborhood: &'static [(i32, i32)],
     state: Vec<C>,
     buffer: Vec<C>,
 }
@@ -27,8 +27,8 @@ where
     pub fn new(
         width: i32,
         height: i32,
-        trans_fn: impl FnMut(&mut C, &[&C]) + 'static,
-        neighbor_fn: impl Fn(i32, i32, i32, i32) -> Vec<(i32, i32)> + 'static,
+        trans_fn: impl FnMut(&mut C, Neighborhood<C>) + 'static,
+        neighborhood: &'static [(i32, i32)],
     ) -> Self {
         let capacity: usize = (width * height) as usize;
         let state = vec![C::default(); capacity];
@@ -38,7 +38,7 @@ where
             width,
             height,
             transition: Box::new(trans_fn),
-            neighborhood: Box::new(neighbor_fn),
+            neighborhood,
             state,
             buffer,
         }
@@ -48,15 +48,15 @@ where
     pub fn from_cells(
         width: i32,
         height: i32,
-        trans_fn: impl FnMut(&mut C, &[&C]) + 'static,
-        neighbor_fn: impl Fn(i32, i32, i32, i32) -> Vec<(i32, i32)> + 'static,
+        trans_fn: impl FnMut(&mut C, Neighborhood<C>) + 'static,
+        neighborhood: &'static [(i32, i32)],
         cells: Vec<C>,
     ) -> Self {
         Simulation {
             width,
             height,
             transition: Box::new(trans_fn),
-            neighborhood: Box::new(neighbor_fn),
+            neighborhood,
             state: cells.to_vec(),
             buffer: cells,
         }
@@ -66,19 +66,18 @@ where
     pub fn step(&mut self) {
         // Manipulate the internal state of a cell the `buffer` grid by iterating over the cells at
         // the neighborhood coordinates in the `state` grid.
-        let w = self.width;
         let buf_ref = &mut self.buffer;
         let state_ref = &self.state;
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let neighbors: Vec<&C> = (self.neighborhood)(x, y, self.width, self.height)
-                    .iter()
-                    .map(|(i, j)| &state_ref[coord_to_idx(w, *i, *j)])
-                    .collect();
-                (self.transition)(&mut buf_ref[coord_to_idx(w, x, y)], &neighbors)
-            }
-        }
 
+        for idx in 0..buf_ref.len() {
+            let n = Neighborhood::new(
+                self.neighborhood,
+                (self.width, self.height),
+                idx,
+                &state_ref,
+            );
+            (self.transition)(&mut buf_ref[idx], n)
+        }
         // Swap the assignments of `state` and `buffer` to "update the grid", so to speak.
         mem::swap(&mut self.state, &mut self.buffer)
     }
@@ -104,65 +103,64 @@ pub fn idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
     (x as i32, y as i32)
 }
 
-static VON_NEUMAN_NEIGHBORHOOD: &'static [(i32, i32); 4] = &[(-1, 0), (0, -1), (1, 0), (0, 1)];
+pub static VON_NEUMAN_NEIGHBORHOOD: &'static [(i32, i32); 4] = &[(-1, 0), (0, -1), (1, 0), (0, 1)];
 
-struct Neighborhood {
+pub struct Neighborhood<'a, C: Send> {
     count: usize,
-    bounds: &'static [(i32, i32)],
+    bounds: &'a [(i32, i32)],
     ca_bounds: (i32, i32),
-    cell_coords: Option<(i32, i32)>,
+    cell_idx: usize,
+    buffer: &'a [C],
 }
 
-impl Neighborhood {
-    fn new(bounds: &'static [(i32, i32)], ca_bounds: (i32, i32)) -> Self {
+impl<'a, C: Send> Neighborhood<'a, C>
+where
+    C: Clone + Default + std::fmt::Debug,
+{
+    fn new(
+        bounds: &'a [(i32, i32)],
+        ca_bounds: (i32, i32),
+        cell_idx: usize,
+        buffer: &'a [C],
+    ) -> Self {
         Neighborhood {
             count: 0,
             bounds,
             ca_bounds,
-            cell_coords: None,
+            cell_idx,
+            buffer,
         }
-    }
-
-    fn init_with_cell(&mut self, cell: (i32, i32)) {
-        self.cell_coords = Some(cell);
-    }
-
-    fn reset(&mut self) {
-        self.count = 0;
     }
 }
 
 // Implement `Iterator` for `Fibonacci`.
 // The `Iterator` trait only requires a method to be defined for the `next` element.
-impl Iterator for Neighborhood {
+impl<'a, C> Iterator for Neighborhood<'a, C>
+where
+    C: Clone + Default + std::fmt::Debug,
+    C: Send,
+{
     // We can refer to this type using Self::Item
-    type Item = usize;
+    type Item = &'a C;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.count == self.bounds.len() {
             None
         } else {
-            let cell = self.cell_coords.unwrap();
-            let neigh = (
-                self.bounds[self.count].0 + cell.0,
-                self.bounds[self.count].1 + cell.1,
-            );
-            let idx = coord_to_idx(self.ca_bounds.0, cell.0, cell.1);
-            if idx < 0 || idx > self.ca_bounds.0 {
-                None
-            } else {
-                Some(idx)
+            while self.count < self.bounds.len() {
+                let cell = idx_to_coord(self.ca_bounds.0 as usize, self.cell_idx);
+                let x = self.bounds[self.count].0 + cell.0;
+                let y = self.bounds[self.count].1 + cell.1;
+
+                self.count += 1;
+
+                if !(x < 0 || x >= self.ca_bounds.0 || y < 0 || y >= self.ca_bounds.1) {
+                    return Some(&self.buffer[coord_to_idx(self.ca_bounds.0, x, y)]);
+                }
             }
+            None
         }
     }
-}
-
-pub fn von_neuman(x: i32, y: i32, width: i32, height: i32) -> Vec<(i32, i32)> {
-    VON_NEUMAN_NEIGHBORHOOD
-        .iter()
-        .map(|(a, b)| (x + a, y + b))
-        .filter(|(a, b)| *a >= 0 && *a < width && *b >= 0 && *b < height)
-        .collect::<Vec<(i32, i32)>>()
 }
 
 #[test]

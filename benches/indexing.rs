@@ -1,6 +1,6 @@
 //! Ensures that cells initialised with coordinates are at the correct place in the state vector.
 
-use casim::ca::{idx_to_coord, von_neuman, Simulation};
+use casim::ca::{idx_to_coord, Neighborhood, Simulation, VON_NEUMAN_NEIGHBORHOOD};
 use criterion::{criterion_group, criterion_main, Criterion};
 
 /// Create a grid of cells with coordinates and for any given cell test whether the coordinates of
@@ -24,9 +24,9 @@ struct LocatableCell {
     y: i32,
 }
 fn create_ca(width: i32, height: i32) -> Simulation<LocatableCell> {
-    let trans_fn = |cell: &mut LocatableCell, neighs: &[&LocatableCell]| {
+    let trans_fn = |cell: &mut LocatableCell, neigh_it: Neighborhood<LocatableCell>| {
         let mut found_neighbors: Vec<(i32, i32)> = Vec::new();
-        for n in neighs {
+        for n in neigh_it.into_iter() {
             if !((cell.x == n.x && (cell.y == n.y - 1 || cell.y == n.y + 1))
                 || (cell.y == n.y && (cell.x == n.x - 1 || cell.x == n.x + 1)))
             {
@@ -54,7 +54,7 @@ fn create_ca(width: i32, height: i32) -> Simulation<LocatableCell> {
         })
         .collect();
 
-    Simulation::from_cells(width, height, trans_fn, &von_neuman, cells)
+    Simulation::from_cells(width, height, trans_fn, VON_NEUMAN_NEIGHBORHOOD, cells)
 }
 
 criterion_group!(benches, indexing_benchmark);

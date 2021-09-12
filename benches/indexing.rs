@@ -8,8 +8,8 @@ use criterion::{criterion_group, criterion_main, Criterion};
 pub fn indexing_benchmark(c: &mut Criterion) {
     c.bench_function("indexing", |b| {
         b.iter(|| {
-            for height in 0..100 {
-                for width in 0..100 {
+            for height in 0..10 {
+                for width in 0..10 {
                     let mut test_ca = create_ca(width, height);
                     test_ca.step();
                 }
@@ -30,10 +30,10 @@ fn create_ca(width: i32, height: i32) -> Simulation<LocatableCell> {
             if !((cell.x == n.x && (cell.y == n.y - 1 || cell.y == n.y + 1))
                 || (cell.y == n.y && (cell.x == n.x - 1 || cell.x == n.x + 1)))
             {
-                println!(
-                    "this cell: ({},{}), neighbour: ({},{})",
-                    cell.x, cell.y, n.x, n.y
-                );
+                // println!(
+                //     "this cell: ({},{}), neighbour: ({},{})",
+                //     cell.x, cell.y, n.x, n.y
+                // );
                 assert!(false);
             }
             if found_neighbors.contains(&(n.x, n.y)) {

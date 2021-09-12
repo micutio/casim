@@ -13,16 +13,16 @@ use std::mem;
 pub struct Simulation<C: Send> {
     width: i32,
     height: i32,
-    state: Vec<C>,
-    buffer: Vec<C>,
     transition: Box<dyn FnMut(&mut C, &[&C])>,
     neighborhood: Box<dyn Fn(i32, i32, i32, i32) -> Vec<(i32, i32)>>,
+    state: Vec<C>,
+    buffer: Vec<C>,
 }
 
 /// T applies a function to Cell of buffer 1 and neighborhood and then puts a clone of the cell with the new state in buffer 2
 impl<C: Send> Simulation<C>
 where
-    C: Clone + Default,
+    C: Clone + Default + std::fmt::Debug,
 {
     pub fn new(
         width: i32,
@@ -37,10 +37,10 @@ where
         Simulation {
             width,
             height,
-            state,
-            buffer,
             transition: Box::new(trans_fn),
             neighborhood: Box::new(neighbor_fn),
+            state,
+            buffer,
         }
     }
 
@@ -52,15 +52,13 @@ where
         neighbor_fn: impl Fn(i32, i32, i32, i32) -> Vec<(i32, i32)> + 'static,
         cells: Vec<C>,
     ) -> Self {
-        let state = cells;
-        let buffer = vec![C::default(); state.len()];
         Simulation {
             width,
             height,
-            state,
-            buffer,
             transition: Box::new(trans_fn),
             neighborhood: Box::new(neighbor_fn),
+            state: cells.to_vec(),
+            buffer: cells,
         }
     }
 
@@ -71,8 +69,8 @@ where
         let w = self.width;
         let buf_ref = &mut self.buffer;
         let state_ref = &self.state;
-        for x in 0..self.width {
-            for y in 0..self.height {
+        for y in 0..self.height {
+            for x in 0..self.width {
                 let neighbors: Vec<&C> = (self.neighborhood)(x, y, self.width, self.height)
                     .iter()
                     .map(|(i, j)| &state_ref[coord_to_idx(w, *i, *j)])

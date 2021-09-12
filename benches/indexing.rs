@@ -1,19 +1,21 @@
 //! Ensures that cells initialised with coordinates are at the correct place in the state vector.
 
-use casim::ca::idx_to_coord;
-#[cfg(test)]
-use casim::ca::{von_neuman, Simulation};
+use casim::ca::{idx_to_coord, von_neuman, Simulation};
+use criterion::{criterion_group, criterion_main, Criterion};
 
 /// Create a grid of cells with coordinates and for any given cell test whether the coordinates of
 /// neighbor cells line up with it.
-#[test]
-fn indexing() {
-    for height in 0..100 {
-        for width in 0..100 {
-            let mut test_ca = create_ca(width, height);
-            test_ca.step();
-        }
-    }
+pub fn indexing_benchmark(c: &mut Criterion) {
+    c.bench_function("indexing", |b| {
+        b.iter(|| {
+            for height in 0..100 {
+                for width in 0..100 {
+                    let mut test_ca = create_ca(width, height);
+                    test_ca.step();
+                }
+            }
+        })
+    });
 }
 
 #[derive(Clone, Copy, Default, PartialEq, std::fmt::Debug)]
@@ -54,3 +56,6 @@ fn create_ca(width: i32, height: i32) -> Simulation<LocatableCell> {
 
     Simulation::from_cells(width, height, trans_fn, &von_neuman, cells)
 }
+
+criterion_group!(benches, indexing_benchmark);
+criterion_main!(benches);

@@ -1,13 +1,11 @@
 //! Ensures that cells initialised with coordinates are at the correct place in the state vector.
 
 use casim::ca::idx_to_coord;
-#[cfg(test)]
 use casim::ca::{von_neuman, Simulation};
 
 /// Create a grid of cells with coordinates and for any given cell test whether the coordinates of
 /// neighbor cells line up with it.
-#[test]
-fn indexing() {
+fn main() {
     for height in 0..100 {
         for width in 0..100 {
             let mut test_ca = create_ca(width, height);

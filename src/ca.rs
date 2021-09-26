@@ -66,17 +66,22 @@ where
     pub fn step(&mut self) {
         // Manipulate the internal state of a cell the `buffer` grid by iterating over the cells at
         // the neighborhood coordinates in the `state` grid.
-        let buf_ref = &mut self.buffer;
+        let buffr_ref = &mut self.buffer;
         let state_ref = &self.state;
 
-        for idx in 0..buf_ref.len() {
+        for idx in 0..buffr_ref.len() {
+            // Before we perform the transition update the cell state because if the transition
+            // does not change the cell it is in danger of becoming outdated.
+            // This is not nice but I don't have a better idea right now.
+            buffr_ref[idx] = state_ref[idx].clone();
+            // perform transition
             let n = Neighborhood::new(
                 self.neighborhood,
                 (self.width, self.height),
                 idx,
                 &state_ref,
             );
-            (self.transition)(&mut buf_ref[idx], n)
+            (self.transition)(&mut buffr_ref[idx], n)
         }
         // Swap the assignments of `state` and `buffer` to "update the grid", so to speak.
         mem::swap(&mut self.state, &mut self.buffer)

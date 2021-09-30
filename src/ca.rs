@@ -138,7 +138,7 @@ where
     }
 }
 
-// Implement `Iterator` for `Fibonacci`.
+// Implement `Iterator` for `Neighborhood`.
 // The `Iterator` trait only requires a method to be defined for the `next` element.
 impl<'a, C> Iterator for Neighborhood<'a, C>
 where
@@ -159,7 +159,7 @@ where
 
                 self.count += 1;
 
-                if !(x < 0 || x >= self.ca_bounds.0 || y < 0 || y >= self.ca_bounds.1) {
+                if x >= 0 && x < self.ca_bounds.0 && y >= 0 && y < self.ca_bounds.1 {
                     return Some(&self.buffer[coord_to_idx(self.ca_bounds.0, x, y)]);
                 }
             }

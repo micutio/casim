@@ -4,7 +4,7 @@ use casim::ca::{Neighborhood, Simulation, VON_NEUMAN_NEIGHBORHOOD};
 
 fn main() {
     let trans_fn = |cell: &mut bool, neigh_it: Neighborhood<bool>| {
-        let true_count = neigh_it.into_iter().filter(|c| **c == true).count();
+        let true_count = neigh_it.into_iter().filter(|c| **c).count();
 
         if true_count > 2 {
             *cell = true;

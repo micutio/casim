@@ -34,10 +34,10 @@ fn create_ca(width: i32, height: i32) -> Simulation<LocatableCell> {
                 //     "this cell: ({},{}), neighbour: ({},{})",
                 //     cell.x, cell.y, n.x, n.y
                 // );
-                assert!(false);
+                panic!();
             }
             if found_neighbors.contains(&(n.x, n.y)) {
-                assert!(false);
+                panic!();
             }
             found_neighbors.push((n.x, n.y));
         }

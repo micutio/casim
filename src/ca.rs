@@ -75,12 +75,7 @@ where
             // This is not nice but I don't have a better idea right now.
             buffr_ref[idx] = state_ref[idx].clone();
             // perform transition
-            let n = Neighborhood::new(
-                self.neighborhood,
-                (self.width, self.height),
-                idx,
-                &state_ref,
-            );
+            let n = Neighborhood::new(self.neighborhood, (self.width, self.height), idx, state_ref);
             (self.transition)(&mut buffr_ref[idx], n)
         }
         // Swap the assignments of `state` and `buffer` to "update the grid", so to speak.
@@ -108,7 +103,7 @@ pub fn idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
     (x as i32, y as i32)
 }
 
-pub static VON_NEUMAN_NEIGHBORHOOD: &'static [(i32, i32); 4] = &[(-1, 0), (0, -1), (1, 0), (0, 1)];
+pub static VON_NEUMAN_NEIGHBORHOOD: &[(i32, i32); 4] = &[(-1, 0), (0, -1), (1, 0), (0, 1)];
 
 pub struct Neighborhood<'a, C: Send> {
     count: usize,

@@ -15,6 +15,17 @@
 //! The goal of this library is to offer a comprehensive tool chain for simulations based on both
 //! of these models.
 
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
+#![allow(
+    clippy::multiple_crate_versions,
+    clippy::similar_names,
+    clippy::cast_precision_loss,
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss,
+    clippy::use_self
+)]
+
 #[macro_use]
 extern crate log;
 extern crate pretty_env_logger;

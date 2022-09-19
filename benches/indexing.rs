@@ -26,7 +26,7 @@ struct LocatableCell {
 fn create_ca(width: i32, height: i32) -> Simulation<LocatableCell> {
     let trans_fn = |cell: &mut LocatableCell, neigh_it: Neighborhood<LocatableCell>| {
         let mut found_neighbors: Vec<(i32, i32)> = Vec::new();
-        for n in neigh_it.into_iter() {
+        for n in neigh_it {
             if !((cell.x == n.x && (cell.y == n.y - 1 || cell.y == n.y + 1))
                 || (cell.y == n.y && (cell.x == n.x - 1 || cell.x == n.x + 1)))
             {

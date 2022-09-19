@@ -2,6 +2,8 @@
 
 use std::mem;
 
+pub type NeighborhoodFunction<T> = Box<dyn FnMut(&mut T, Neighborhood<T>)>;
+
 /// C = Cell
 ///     - data type of the cell
 /// T = Transition
@@ -13,16 +15,16 @@ use std::mem;
 pub struct Simulation<C: Send> {
     width: i32,
     height: i32,
-    transition: Box<dyn FnMut(&mut C, Neighborhood<C>)>,
+    transition: NeighborhoodFunction<C>,
     neighborhood: &'static [(i32, i32)],
     state: Vec<C>,
     buffer: Vec<C>,
 }
 
 /// T applies a function to Cell of buffer 1 and neighborhood and then puts a clone of the cell with the new state in buffer 2
-impl<C: Send> Simulation<C>
+impl<C> Simulation<C>
 where
-    C: Clone + Default + std::fmt::Debug,
+    C: Send + Clone + Default + std::fmt::Debug,
 {
     pub fn new(
         width: i32,
@@ -57,7 +59,7 @@ where
             height,
             transition: Box::new(trans_fn),
             neighborhood,
-            state: cells.to_vec(),
+            state: cells.clone(),
             buffer: cells,
         }
     }
@@ -76,10 +78,10 @@ where
             buffr_ref[idx] = state_ref[idx].clone();
             // perform transition
             let n = Neighborhood::new(self.neighborhood, (self.width, self.height), idx, state_ref);
-            (self.transition)(&mut buffr_ref[idx], n)
+            (self.transition)(&mut buffr_ref[idx], n);
         }
         // Swap the assignments of `state` and `buffer` to "update the grid", so to speak.
-        mem::swap(&mut self.state, &mut self.buffer)
+        mem::swap(&mut self.state, &mut self.buffer);
     }
 
     pub fn step_until(&mut self, step_count: i32) {
@@ -88,16 +90,19 @@ where
         }
     }
 
+    #[must_use]
     pub fn cells(&self) -> &[C] {
         &self.state
     }
 }
 
-pub fn coord_to_idx(width: i32, x: i32, y: i32) -> usize {
+#[must_use]
+pub const fn coord_to_idx(width: i32, x: i32, y: i32) -> usize {
     (y * width + x) as usize
 }
 
-pub fn idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
+#[must_use]
+pub const fn idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
     let x = idx % width;
     let y = idx / width;
     (x as i32, y as i32)
@@ -113,11 +118,11 @@ pub struct Neighborhood<'a, C: Send> {
     buffer: &'a [C],
 }
 
-impl<'a, C: Send> Neighborhood<'a, C>
+impl<'a, C> Neighborhood<'a, C>
 where
-    C: Clone + Default + std::fmt::Debug,
+    C: Send + Clone + Default + std::fmt::Debug,
 {
-    fn new(
+    const fn new(
         bounds: &'a [(i32, i32)],
         ca_bounds: (i32, i32),
         cell_idx: usize,
@@ -137,16 +142,13 @@ where
 // The `Iterator` trait only requires a method to be defined for the `next` element.
 impl<'a, C> Iterator for Neighborhood<'a, C>
 where
-    C: Clone + Default + std::fmt::Debug,
-    C: Send,
+    C: Send + Clone + Default + std::fmt::Debug,
 {
     // We can refer to this type using Self::Item
     type Item = &'a C;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.count == self.bounds.len() {
-            None
-        } else {
+        if self.count != self.bounds.len() {
             while self.count < self.bounds.len() {
                 let cell = idx_to_coord(self.ca_bounds.0 as usize, self.cell_idx);
                 let x = self.bounds[self.count].0 + cell.0;
@@ -158,8 +160,8 @@ where
                     return Some(&self.buffer[coord_to_idx(self.ca_bounds.0, x, y)]);
                 }
             }
-            None
         }
+        None
     }
 }
 

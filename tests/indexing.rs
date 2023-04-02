@@ -41,7 +41,6 @@ fn create_ca(width: i32, height: i32) -> Simulation<LocatableCell> {
     };
 
     let cells = (0..width * height)
-        .into_iter()
         .map(|idx| {
             let coord = idx_to_coord(width as usize, idx as usize);
             LocatableCell {

@@ -2,7 +2,7 @@
 
 use std::mem;
 
-pub type NeighborhoodFunction<T> = Box<dyn FnMut(&mut T, Neighborhood<T>)>;
+pub type NeighborhoodFunction<T> = dyn FnMut(&mut T, Neighborhood<T>);
 
 /// C = Cell
 ///     - data type of the cell
@@ -13,15 +13,16 @@ pub type NeighborhoodFunction<T> = Box<dyn FnMut(&mut T, Neighborhood<T>)>;
 ///     - for a given cell (position) get all neighboring cells (positions)
 ///     - Fn(i32, i32) -> [(i32, i32)]
 pub struct Simulation<C: Send> {
-    width: i32,
-    height: i32,
-    transition: NeighborhoodFunction<C>,
+    width:        i32,
+    height:       i32,
+    transition:   Box<NeighborhoodFunction<C>>,
     neighborhood: &'static [(i32, i32)],
-    state: Vec<C>,
-    buffer: Vec<C>,
+    state:        Vec<C>,
+    buffer:       Vec<C>,
 }
 
-/// T applies a function to Cell of buffer 1 and neighborhood and then puts a clone of the cell with the new state in buffer 2
+/// T applies a function to Cell of buffer 1 and neighborhood and then puts a clone of the cell with
+/// the new state in buffer 2
 impl<C> Simulation<C>
 where
     C: Send + Clone + Default + std::fmt::Debug,
@@ -111,11 +112,11 @@ pub const fn idx_to_coord(width: usize, idx: usize) -> (i32, i32) {
 pub static VON_NEUMAN_NEIGHBORHOOD: &[(i32, i32); 4] = &[(-1, 0), (0, -1), (1, 0), (0, 1)];
 
 pub struct Neighborhood<'a, C: Send> {
-    count: usize,
-    bounds: &'a [(i32, i32)],
+    count:     usize,
+    bounds:    &'a [(i32, i32)],
     ca_bounds: (i32, i32),
-    cell_idx: usize,
-    buffer: &'a [C],
+    cell_idx:  usize,
+    buffer:    &'a [C],
 }
 
 impl<'a, C> Neighborhood<'a, C>

@@ -8,10 +8,10 @@ use criterion::{criterion_group, criterion_main, Criterion};
 pub fn indexing_benchmark(c: &mut Criterion) {
     c.bench_function("indexing", |b| {
         b.iter(|| {
-            for height in 0..10 {
-                for width in 0..10 {
+            for height in 10..100 {
+                for width in 10..100 {
                     let mut test_ca = create_ca(width, height);
-                    test_ca.step();
+                    test_ca.step_until(100);
                 }
             }
         })
